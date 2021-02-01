@@ -7,17 +7,28 @@ namespace TestEasyCLI
     {
         class Foo
         {
-            int bar(int id, string name)
+            string bar(int id, string name = "aaa")
             {
-                return 1000;
+                return id + name;
             }
         }
+
         [TestMethod]
         public void SimpleTest()
         {
             var c = new EasyCLI.EasyCLI();
             c.AddClass(new Foo());
-            c.Call("foo bar --id 20 --name hello");
+
+            var a = c.Call<string>("foo bar --id 20 --name hello");
+            if (a != "20hello")
+            {
+                Assert.Fail();
+            }
+            var d = c.Call<string>("foo bar --id 20");
+            if (d != "20aaa")
+            {
+                Assert.Fail();
+            }
         }
     }
 }
