@@ -26,6 +26,16 @@ namespace TestEasyCLI
         }
 
         [TestMethod]
+        public void NothingTest()
+        {
+            var r = new EasyCLI.EasyCLI().ParseArguments("           ");
+            if (r.Count != 0)
+            {
+                Assert.Fail("개수가 0개가 아님.");
+            }
+        }
+
+        [TestMethod]
         public void BlankTest()
         {
             var r = new EasyCLI.EasyCLI().ParseArguments("   a    b    c   d e       ");

@@ -1,26 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace EasyCLI
 {
     public class EasyCLI
     {
+        List<object> classList = new List<object>();
+
+        class Param
+        {
+            public string name;
+            public object value;
+            public int index;
+        }
+
+        public void AddClass(object item)
+        {
+            classList.Add(item);
+        }
+
+        public void Call(string command)
+        {
+            var list = ParseArguments(command);
+            if (list.Count == 0)
+            {
+                Console.WriteLine("error");
+            }
+            var obj = classList.Find((item) => item.GetType().Name.ToLower() == list[0].ToLower());
+            var method = obj.GetType()
+                .GetMethods(BindingFlags.Public | BindingFlags.NonPublic)
+                
+            //var param = method.GetParameters()
+            //                  .Select((item) => new Param
+            //{
+            //    name = item.Name,
+            //    index = item.Position
+            //}).ToList();
+
+            //param.Sort((a, b) => a.index - b.index);
+
+            //for (int i = 2; i < list.Count; i++)
+            //{
+            //    if (list[i].StartsWith("--"))
+            //    {
+            //        var p = param.Find((item) => item.name.ToLower() == list[i].Remove(2).ToLower());
+            //        i += 1;
+            //        p.value = list[i];
+            //    }
+            //}
+            
+
+        }
+
+
         enum QuoteType : int
         {
             SingleQuote,
             DoubleQuote,
             None
         }
-
-        public void AddClass(object item)
+        public List<string> ParseArguments(string data)
         {
-
-        }
-
-        public List<String> ParseArguments(string data)
-        {
-            List<String> result = new List<string>();
+            List<string> result = new List<string>();
 
             StringBuilder temp = new StringBuilder();
             QuoteType quote = QuoteType.None;
