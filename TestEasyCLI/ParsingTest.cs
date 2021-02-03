@@ -8,7 +8,7 @@ namespace TestEasyCLI
         [TestMethod]
         public void SimpleTest()
         {
-            var r = new EasyCLI.EasyCLI().ParseArguments("a b c d e");
+            var r = new EasyCLI.ParsingArguments().SplitArguments("a b c d e");
             if (r.Count != 5)
             {
                 Assert.Fail("개수가 5개가 아님.");
@@ -28,7 +28,7 @@ namespace TestEasyCLI
         [TestMethod]
         public void NothingTest()
         {
-            var r = new EasyCLI.EasyCLI().ParseArguments("           ");
+            var r = new EasyCLI.ParsingArguments().SplitArguments("           ");
             if (r.Count != 0)
             {
                 Assert.Fail("개수가 0개가 아님.");
@@ -38,7 +38,7 @@ namespace TestEasyCLI
         [TestMethod]
         public void BlankTest()
         {
-            var r = new EasyCLI.EasyCLI().ParseArguments("   a    b    c   d e       ");
+            var r = new EasyCLI.ParsingArguments().SplitArguments("   a    b    c   d e       ");
             if (r.Count != 5)
             {
                 Assert.Fail("개수가 5개가 아님.");
@@ -59,7 +59,7 @@ namespace TestEasyCLI
         [TestMethod]
         public void HeavyTest()
         {
-            var r = new EasyCLI.EasyCLI().ParseArguments("aaaa asf \"ha aaaa aa\" ddd\\t \'aaa d \" \" \\\'\' aa");
+            var r = new EasyCLI.ParsingArguments().SplitArguments("aaaa asf \"ha aaaa aa\" ddd\\t \'aaa d \" \" \\\'\' aa");
             if (r.Count != 6)
             {
                 Assert.Fail("개수가 6개가 아님.");

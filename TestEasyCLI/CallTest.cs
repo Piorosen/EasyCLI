@@ -1,3 +1,4 @@
+using EasyCLI;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestEasyCLI
@@ -5,6 +6,7 @@ namespace TestEasyCLI
     [TestClass]
     public class CallTest
     {
+        [AlternativeName("bbb")]
         class Foo
         {
             string bar(int id, string name = "aaa")
@@ -19,7 +21,7 @@ namespace TestEasyCLI
             var c = new EasyCLI.EasyCLI();
             c.AddClass(new Foo());
 
-            var a = c.Call<string>("foo bar --id 20 --name hello");
+            var a = c.Call<string>("bbb bar --id 20 --name hello");
             if (a != "20hello")
             {
                 Assert.Fail();
