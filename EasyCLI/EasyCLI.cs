@@ -36,7 +36,8 @@ namespace EasyCLI
                               {
                                   name = item.Name,
                                   index = item.Position,
-                                  type = item.ParameterType
+                                  type = item.ParameterType,
+                                  value = Type.Missing
                               })
                               .OrderBy((item) => item.index)
                               .ToList();
@@ -102,10 +103,7 @@ namespace EasyCLI
             }
 
             var param = GetParameter(method);
-            SetParamAndArgument(param, list);
-
-            var eeeppparm = ppparm.Select((item) => )
-                .Select((item) => item == null ? Type.Missing : item).ToArray();
+            var eeeppparm = SetParamAndArgument(param, list);
 
             return (T)method.Invoke(obj, eeeppparm);
         }
