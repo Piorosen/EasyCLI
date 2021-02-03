@@ -26,7 +26,7 @@ namespace TestEasyCLI
             {
                 Assert.Fail();
             }
-            var d = c.Call<string>("foo bar --id 20");
+            var d = c.Call<string>("bbb bar --id 20");
             if (d != "20aaa")
             {
                 Assert.Fail();

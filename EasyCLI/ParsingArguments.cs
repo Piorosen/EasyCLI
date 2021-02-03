@@ -163,7 +163,7 @@ namespace EasyCLI
 #endif
 
             string funcName = null;
-            if (args.Count > 1 && args[1].StartsWith("--"))
+            if (args.Count > 1 && !args[1].StartsWith("--"))
             {
                 funcName = args[1];
             }
@@ -174,6 +174,7 @@ namespace EasyCLI
                 .Select((item) => (item, item.GetCustomAttribute<AlternativeNameAttribute>()?.Name ?? item.Name))
                 .SingleOrDefault((item) => item.Item2?.ToLower() == funcName?.ToLower());
 
+            command.FunctionObject = func.item;
 #if DEBUG
             command.FunctionName = func.Item2;
 #endif
