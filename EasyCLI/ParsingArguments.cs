@@ -14,17 +14,25 @@ namespace EasyCLI
         public int index;
     }
 
+    public class Method
+    {
+        public String name;
+        public MethodInfo method;
+    }
+
+    public class ObjectMethods
+    {
+        public object obj;
+        public Method[] methods;
+
+    }
+
     public struct Command
     {
         public object ClassObject;
 
         public MethodInfo FunctionObject;
         public List<Param> Arguments;
-
-#if DEBUG
-        public string ClassName;
-        public string FunctionName;
-#endif
     }
 
     public class ParsingArguments
@@ -142,6 +150,76 @@ namespace EasyCLI
             return result;
         }
 
+        public string? GetNameByAttribute(object obj)
+        {
+            var type = obj.GetType();
+            var attr = type.GetType().GetCustomAttribute<AlternativeNameAttribute>();
+            return attr != null ? attr.Name : type.Name;
+        }
+
+        public object[] FindClassObject(string name, List<object> objectList)
+        {
+            return objectList.Where((item) => item != null)
+                .Select((item) => (item, GetNameByAttribute(item)))
+                .Where((obj) => obj.Item2.ToLower() == name)
+                .Select((obj) => obj.item)
+                .ToArray();
+        }
+
+        public ObjectMethods[] FindMethodObject(string name, object[] objectList)
+        {
+            return objectList.Where((item) => item != null)
+                .Select((item) => (obj: item, methods: item.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)))
+                .Select((item) => (item.obj, methods: (item.methods.Select((item) => (method: item, name: GetNameByAttribute(item))))))
+                .Select((item) => (obj: item, methods: item.methods.Where((item) => item.name.ToLower() == name)))
+                .Select((item) => new ObjectMethods
+                {
+                    obj = item.obj,
+                    methods = item.methods.Select((item) => new Method
+                    {
+                        method = item.method,
+                        name = item.name
+                    }).ToArray()
+                })
+                .ToArray();
+        }
+
+        public ObjectMethods[] FilterMethodObjectByParameterName(string[] param, ObjectMethods[] methods)
+        {
+            return methods.Where((item) => item != null)
+                .Select((item) => (obj: item.obj,
+                                   methods: item.methods.Select((item) => (
+                                        method: item.method,
+                                        name: item.name,
+                                        param: item.method.GetParameters().Select((item) => (p: item, name: GetNameByAttribute(item)))
+                                   ))))
+                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => item.param.All((p) => param.Contains(p.name)))))
+                .Select((item) => new ObjectMethods
+                {
+                    obj = item.obj,
+                    methods = item.methods.Select((item) => new Method
+                    {
+                        method = item.method,
+                        name = item.name
+                    }).ToArray(),
+                })
+                .ToArray();
+        }
+
+        public Param[] GetParametersFromMethodInfo(MethodInfo method)
+        {
+            return method.GetParameters()
+                .Select((item) => (param: item, name: GetNameByAttribute(item)))
+                .Select((item) => new Param
+            {
+                name = item.name,
+                index = item.param.Position,
+                type = item.param.ParameterType,
+                value = Type.Missing
+            }).OrderBy((item) => item.index)
+            .ToArray();
+        }
+
         public Command? Result(string data, List<object> classList)
         {
             var command = new Command();
@@ -150,59 +228,27 @@ namespace EasyCLI
             {
                 return null;
             }
-
-            var item = classList.Where((item) => item != null)
-                .Select((item) => (item, item.GetType()))
-                .Select((item) => (item.item, item.Item2.GetCustomAttribute<AlternativeNameAttribute>()?.Name ?? item.Item2.Name))
-                .SingleOrDefault((item) => item.Item2.ToLower() == args[0].ToLower());
-
-            command.ClassObject = item.item;
-
-#if DEBUG
-            command.ClassName = item.Item2;
-#endif
-
             string funcName = null;
             if (args.Count > 1 && !args[1].StartsWith("--"))
             {
                 funcName = args[1];
             }
 
-            var obj = item.item;
-            var func = obj.GetType()
-                .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Select((item) => (item, item.GetCustomAttribute<AlternativeNameAttribute>()?.Name ?? item.Name))
-                .SingleOrDefault((item) => item.Item2?.ToLower() == funcName?.ToLower());
+            var objList = FindClassObject(args[0], classList);
+            var funcList = FindMethodObject(funcName, objList);
+            var argsList = args.Skip(1 + funcName == null ? 0 : 1)
+                .Where((item) => item.StartsWith("--"))
+                .ToArray();
 
-            command.FunctionObject = func.item;
-#if DEBUG
-            command.FunctionName = func.Item2;
-#endif
-
-            var param = func.item.GetParameters().Select((item) => new Param
+            var equalParam = FilterMethodObjectByParameterName(argsList, funcList);
+            if (equalParam.Length != 1)
             {
-                name = item.Name,
-                index = item.Position,
-                type = item.ParameterType,
-                value = Type.Missing
-            }).OrderBy((item) => item.index)
-            .ToList();
-
-            for (int i = 1 + (funcName == null ? 0 : 1); i < args.Count; i++)
-            {
-                if (args[i].StartsWith("--") && i + 1 < args.Count)
-                {
-                    var p = param.Find((item) => item.name == args[i].Substring(2));
-                    p.value = Convert.ChangeType(args[i + 1], p.type);
-                    i += 1;
-                }
+                return null;
             }
-            command.Arguments = param;
+            // 개수 확인 했으므로 Single, 객체 추출 가능함.
+
 
             return command;
         }
-
-
-
     }
 }
