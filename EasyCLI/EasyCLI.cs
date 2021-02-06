@@ -10,7 +10,6 @@ namespace EasyCLI
     public class EasyCLI
     {
         List<object> classList = new List<object>();
-
         
         public void AddClass(object item)
         {
