@@ -42,7 +42,7 @@ namespace EasyCLI
         /// <param name="name">Class의 이름(타입)</param>
         /// <param name="objectList">찾을 Object의 목록</param>
         /// <returns>이름(타입)이 같은 객체</returns>
-        static object[] FindClassObject(string name, List<object> objectList)
+        public static object[] FindClassObject(string name, List<object> objectList)
         {
             // objectList 목록에 null 이 있는지 확인합니다.
             return objectList.Where((item) => item != null)

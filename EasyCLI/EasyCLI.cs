@@ -9,11 +9,25 @@ namespace EasyCLI
 {
     public class EasyCLI
     {
-        List<object> classList = new List<object>();
+        readonly List<object> classList = new List<object>();
         
         public void AddClass(object item)
         {
             classList.Add(item);
+        }
+
+        public void RemoveClass(object item)
+        {
+            classList.Remove(item);
+        }
+
+        public void RemoveClass(string name)
+        {
+            object[] obj = ParsingArguments.FindClassObject(name, classList);
+            foreach (var o in obj)
+            {
+                classList.Remove(o);
+            }
         }
 
         public object Call(string command)
