@@ -190,7 +190,7 @@ namespace EasyCLI
             return objectList.Where((item) => item != null)
                 .Select((item) => (obj: item, methods: item.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)))
                 .Select((item) => (obj: item.obj, methods: (item.methods.Select((item) => (method: item, name: GetNameByAttribute(item))))))
-                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => item.name.ToLower() == name.ToLower())))
+                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => item.name?.ToLower() == name?.ToLower())))
                 .Select((item) => new ObjectMethods
                 {
                     obj = item.obj,
@@ -205,6 +205,7 @@ namespace EasyCLI
 
         public ObjectMethods[] FilterMethodObjectByParameterName(string[] param, ObjectMethods[] methods)
         {
+            //item.param.All((p) => param.Contains(p.name))
             return methods.Where((item) => item != null)
                 .Select((item) => (obj: item.obj,
                                    methods: item.methods.Select((item) => (
@@ -212,7 +213,7 @@ namespace EasyCLI
                                         name: item.name,
                                         param: item.method.GetParameters().Select((item) => (p: item, name: GetNameByAttribute(item)))
                                    ))))
-                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => item.param.All((p) => param.Contains(p.name)))))
+                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => param.All((p) => item.param.Select((item) => item.name.ToLower()).Contains(p.ToLower())))))
                 .Select((item) => new ObjectMethods
                 {
                     obj = item.obj,
@@ -242,10 +243,10 @@ namespace EasyCLI
             {
                 if (args[i].StartsWith("--"))
                 {
-                    var pf = param.Find((item) => item.name == args[i].Substring(2));
+                    var pf = param.Find((item) => item.name.ToLower() == args[i].Substring(2).ToLower());
                     if (pf != null && i + 1 < args.Length)
                     {
-                        pf.value = default;
+                        pf.value = Type.Missing;
                         if (!args[i + 1].StartsWith("--"))
                         {
                             pf.value = Convert.ChangeType(args[i + 1], pf.type);
