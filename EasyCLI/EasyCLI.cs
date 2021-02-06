@@ -36,28 +36,6 @@ namespace EasyCLI
                 var a = list.Value.Arguments;
                 return (T)m.Invoke(c, a.Select((a) => a.value).ToArray());
             }
-            //if (list.Count == 0)
-            //{
-            //    Console.WriteLine("error");
-            //    return default;
-            //}
-
-            //var obj = FindClassObject(list[0]);
-            //if (obj == null)
-            //{
-            //    Console.WriteLine("data is null");
-            //    return default;
-            //}
-
-            //var method = FindMethod(obj, list[1]);
-            //if (method == null)
-            //{
-            //    Console.WriteLine("method is null");
-            //    return default;
-            //}
-
-
-            //var param = GetParameter(method);
         }
 
 
