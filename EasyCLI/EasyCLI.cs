@@ -23,7 +23,7 @@ namespace EasyCLI
 
         public T Call<T>(string command)
         {
-            var list = new ParsingArguments().Result(command, classList);
+            var list = ParsingArguments.Result(command, classList);
 
             if (list == null)
             {
@@ -36,7 +36,5 @@ namespace EasyCLI
                 return (T)m.Invoke(c, a.Select((a) => a.value).ToArray());
             }
         }
-
-
     }
 }

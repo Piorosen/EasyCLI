@@ -5,7 +5,7 @@ using System.Text;
 
 namespace EasyCLI.Model
 {
-    public struct Command
+    struct Command
     {
         public object ClassObject;
 

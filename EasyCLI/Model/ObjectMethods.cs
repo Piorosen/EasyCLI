@@ -4,11 +4,9 @@ using System.Text;
 
 namespace EasyCLI.Model
 {
-    public class ObjectMethods
+    class ObjectMethods
     {
         public object obj;
         public Method[] methods;
-
     }
-
 }

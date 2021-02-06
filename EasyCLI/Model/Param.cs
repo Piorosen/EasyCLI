@@ -4,7 +4,7 @@ using System.Text;
 
 namespace EasyCLI.Model
 {
-    public class Param
+    class Param
     {
         public string name;
         public object value;

@@ -66,14 +66,6 @@ namespace TestEasyCLI
             {
                 c.Call<string>("EqualNameFoo h --id --name");
             }, "일치하는 클래스의 종류가 2개 이상이거나 없습니다.");
-
-            ExceptionMessage(() =>
-            {
-                c.Call<string>("aaaasa h --id --name");
-            }, "일치하는 클래스의 종류가 2개 이상이거나 없습니다.");
-
-
-
         }
 
         [TestMethod]
