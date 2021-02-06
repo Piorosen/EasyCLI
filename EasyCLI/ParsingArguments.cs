@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace EasyCLI
@@ -32,7 +33,7 @@ namespace EasyCLI
         public object ClassObject;
 
         public MethodInfo FunctionObject;
-        public List<Param> Arguments;
+        public Param[] Arguments;
     }
 
     public class ParsingArguments
@@ -150,18 +151,36 @@ namespace EasyCLI
             return result;
         }
 
-        public string? GetNameByAttribute(object obj)
+        public string GetNameByAttribute(object obj)
         {
+            AlternativeNameAttribute attr;
             var type = obj.GetType();
-            var attr = type.GetType().GetCustomAttribute<AlternativeNameAttribute>();
-            return attr != null ? attr.Name : type.Name;
+
+            string typeName;
+            switch (obj)
+            {
+                case MethodInfo m:
+                    attr = m.GetCustomAttribute<AlternativeNameAttribute>();
+                    typeName = m.Name;
+                    break;
+                case ParameterInfo p:
+                    attr = p.GetCustomAttribute<AlternativeNameAttribute>();
+                    typeName = p.Name;
+                    break;
+                default:
+                    attr = type.GetCustomAttribute<AlternativeNameAttribute>();
+                    typeName = type.Name;
+                    break;
+            }
+
+            return attr != null ? attr.Name : typeName;
         }
 
         public object[] FindClassObject(string name, List<object> objectList)
         {
             return objectList.Where((item) => item != null)
                 .Select((item) => (item, GetNameByAttribute(item)))
-                .Where((obj) => obj.Item2.ToLower() == name)
+                .Where((obj) => obj.Item2.ToLower() == name.ToLower())
                 .Select((obj) => obj.item)
                 .ToArray();
         }
@@ -170,8 +189,8 @@ namespace EasyCLI
         {
             return objectList.Where((item) => item != null)
                 .Select((item) => (obj: item, methods: item.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)))
-                .Select((item) => (item.obj, methods: (item.methods.Select((item) => (method: item, name: GetNameByAttribute(item))))))
-                .Select((item) => (obj: item, methods: item.methods.Where((item) => item.name.ToLower() == name)))
+                .Select((item) => (obj: item.obj, methods: (item.methods.Select((item) => (method: item, name: GetNameByAttribute(item))))))
+                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => item.name.ToLower() == name.ToLower())))
                 .Select((item) => new ObjectMethods
                 {
                     obj = item.obj,
@@ -206,23 +225,40 @@ namespace EasyCLI
                 .ToArray();
         }
 
-        public Param[] GetParametersFromMethodInfo(MethodInfo method)
+        public Param[] GetParametersFromMethodInfo(MethodInfo method, string[] args)
         {
-            return method.GetParameters()
+            var param = method.GetParameters()
                 .Select((item) => (param: item, name: GetNameByAttribute(item)))
                 .Select((item) => new Param
+                {
+                    name = item.name,
+                    index = item.param.Position,
+                    type = item.param.ParameterType,
+                    value = Type.Missing
+                }).OrderBy((item) => item.index)
+            .ToList();
+
+            for (int i = 0; i < args.Length; i++)
             {
-                name = item.name,
-                index = item.param.Position,
-                type = item.param.ParameterType,
-                value = Type.Missing
-            }).OrderBy((item) => item.index)
-            .ToArray();
+                if (args[i].StartsWith("--"))
+                {
+                    var pf = param.Find((item) => item.name == args[i].Substring(2));
+                    if (pf != null && i + 1 < args.Length)
+                    {
+                        pf.value = default;
+                        if (!args[i + 1].StartsWith("--"))
+                        {
+                            pf.value = Convert.ChangeType(args[i + 1], pf.type);
+                        }
+                    }
+                }
+            }
+
+            return param.ToArray();
         }
 
         public Command? Result(string data, List<object> classList)
         {
-            var command = new Command();
             var args = SplitArguments(data);
             if (args.Count <= 0)
             {
@@ -238,14 +274,29 @@ namespace EasyCLI
             var funcList = FindMethodObject(funcName, objList);
             var argsList = args.Skip(1 + funcName == null ? 0 : 1)
                 .Where((item) => item.StartsWith("--"))
+                .Select((item) => item.Substring(2))
                 .ToArray();
 
             var equalParam = FilterMethodObjectByParameterName(argsList, funcList);
             if (equalParam.Length != 1)
             {
-                return null;
+                throw new Exception("일치하는 클래스의 종류가 2개 이상이거나 없습니다.");
             }
+            if (equalParam[0].methods.Length != 1)
+            {
+                throw new Exception("일치하는 클래스가 1개 이지만 일치하는 메소드가 2개 이상이거나 없습니다.");
+            }
+
             // 개수 확인 했으므로 Single, 객체 추출 가능함.
+            var command = new Command
+            {
+                ClassObject = equalParam.Single().obj,
+                FunctionObject = equalParam.First().methods.First().method,
+                Arguments = GetParametersFromMethodInfo(equalParam.Single().methods.Single().method,
+                                                        args.Skip(1 + funcName == null ? 0 : 1)
+                                                        .ToArray())
+            };
+
 
 
             return command;

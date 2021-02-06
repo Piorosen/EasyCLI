@@ -31,10 +31,10 @@ namespace EasyCLI
                 return default;
             }else
             {
-                return (T)list.Value.FunctionObject.Invoke(list.Value.ClassObject,
-                                                           list.Value.Arguments.OrderBy((item) => item.index)
-                                                                .Select((item) => item.value)
-                                                                .ToArray());
+                var m = list.Value.FunctionObject;
+                var c = list.Value.ClassObject;
+                var a = list.Value.Arguments;
+                return (T)m.Invoke(c, a.Select((a) => a.value).ToArray());
             }
             //if (list.Count == 0)
             //{

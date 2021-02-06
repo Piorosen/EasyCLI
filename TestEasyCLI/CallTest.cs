@@ -1,23 +1,24 @@
 using EasyCLI;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace TestEasyCLI
 {
     [TestClass]
     public class CallTest
     {
-        [AlternativeName("bbb")]
         class Foo
         {
-            [AlternativeName()]
-            string bar(int id, string name = "aaa")
+            public string bar(int id, string name = "aaa")
             {
                 return id + name;
             }
 
-            string aaa(int id, string name = "aaa")
+            public string aaa(int ids, string name = "aaa")
             {
-                return id + name;
+                return ids + name;
             }
 
 
@@ -27,30 +28,17 @@ namespace TestEasyCLI
         public void SimpleTest()
         {
             var c = new EasyCLI.EasyCLI();
+
+
             c.AddClass(new Foo());
 
-            var a = c.Call<string>("bbb --id 20 --name hello");
-            if (a != "20hello")
+            for (int i = 0; i < 10000; i++)
             {
-                Assert.Fail();
-            }
-
-            a = c.Call<string>("bbb --id 40 --name aaaa");
-            if (a != "40aaaa")
-            {
-                Assert.Fail();
-            }
-
-            a = c.Call<string>("bbb --id --name --name aaaa");
-            if (a != "--nameaaaa")
-            {
-                Assert.Fail();
-            }
-
-            a = c.Call<string>("bbb --id 20");
-            if (a != "20aaa")
-            {
-                Assert.Fail();
+                var a = c.Call<string>("foo bar --id 20 --name \\\"aaaa a a a a\\\"");
+                if (a != "20hello")
+                {
+                    Assert.Fail();
+                }
             }
 
 
