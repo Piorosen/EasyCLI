@@ -10,6 +10,12 @@ namespace EasyCLI
 {
     static class ParsingArguments
     {
+        static string ConvertString(string value)
+        {
+            return Option.Instance.IsPerfectNameCheck ? value : value?.ToLower();
+        }
+        static BindingFlags BindingFlags => Option.Instance.BindingFlags;
+
         static string GetNameByAttribute(object obj)
         {
             AlternativeNameAttribute attr;
@@ -49,7 +55,7 @@ namespace EasyCLI
                 // 타입을 (obj, TypeName)으로 변경합니다.
                 .Select((item) => (item, GetNameByAttribute(item)))
                 // 찾을 이름과 TypeName이 일치하는 객체만 찾습니다.
-                .Where((obj) => obj.Item2.ToLower() == name.ToLower())
+                .Where((obj) => ConvertString(obj.Item2) == ConvertString(name))
                 // 타입을 obj 배열로 변경합니다.
                 .Select((obj) => obj.item)
                 .ToArray();
@@ -63,16 +69,16 @@ namespace EasyCLI
         /// <param name="name">Method 이름 또는 선언 명</param>
         /// <param name="objectList">찾을 Object의 목록</param>
         /// <returns>이름(선언 명)이 같은 함수를 가진 객체</returns>
-        static ObjectMethods[] FindMethodObject(string name, object[] objectList)
+        public static ObjectMethods[] FindMethodObject(string name, object[] objectList)
         {
             // Null 체크
             return objectList.Where((item) => item != null)
                 // (객체, [함수 목록])
-                .Select((item) => (obj: item, methods: item.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)))
+                .Select((item) => (obj: item, methods: item.GetType().GetMethods(BindingFlags)))
                 // (객체, (함수 정보, 함수 이름)
                 .Select((item) => (obj: item.obj, methods: (item.methods.Select((item) => (method: item, name: GetNameByAttribute(item))))))
                 // 함수 이름이 같은 객체만 탐색.
-                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => item.name?.ToLower() == name?.ToLower())))
+                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => ConvertString(item.name) == ConvertString(name))))
                 // ObjectMethods[] 타입으로 변경함.
                 .Select((item) => new ObjectMethods
                 {
@@ -93,7 +99,7 @@ namespace EasyCLI
         /// <param name="param">파라미터 이름(선언 명)을 받습니다.</param>
         /// <param name="methods">메소드 목록을 받습니다.</param>
         /// <returns>파라미터 명이 같은 메소드만 반환 합니다.</returns>
-        static ObjectMethods[] FilterMethodObjectByParameterName(string[] param, ObjectMethods[] methods)
+        public static ObjectMethods[] FilterMethodObjectByParameterName(string[] param, ObjectMethods[] methods)
         {
             // Null 체크
             return methods.Where((item) => item != null)
@@ -106,7 +112,7 @@ namespace EasyCLI
                                    ))))
                 // Param(args)의 이름이 Methods안에 있는 (args)와 이름이 모두 포함이 되어야 합니다.
                 // Param.All((p) => method.param.Contains(p) 예시.
-                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => param.All((p) => item.param.Select((item) => item.name.ToLower()).Contains(p.ToLower())))))
+                .Select((item) => (obj: item.obj, methods: item.methods.Where((item) => param.All((p) => item.param.Select((item) => ConvertString(item.name)).Contains(ConvertString(p))))))
                 // 필터링을 한 후, 결과를 ObjectMethods로 변경하여 반환 합니다.
                 .Select((item) => new ObjectMethods
                 {
@@ -127,7 +133,7 @@ namespace EasyCLI
         /// <param name="method">Method 입니다.</param>
         /// <param name="args">ParsingStringExtension에서 나온 결과를 입력 받습니다.</param>
         /// <returns>Parameter를 반환 합니다.</returns>
-        static Param[] GetParametersFromMethodInfo(MethodInfo method, string[] args)
+        public static Param[] GetParametersFromMethodInfo(MethodInfo method, string[] args)
         {
             // Method의 파라미터를 가지고 옵니다.
             var param = method.GetParameters()
@@ -155,7 +161,7 @@ namespace EasyCLI
             {
                 if (args[i].StartsWith("--"))
                 {
-                    var pf = param.Find((item) => item.name.ToLower() == args[i].Substring(2).ToLower());
+                    var pf = param.Find((item) => ConvertString(item.name) == ConvertString(args[i].Substring(2)));
                     // null을 체크 합니다. (예외 처리)
                     if (pf != null && i + 1 < args.Length)
                     {
@@ -181,6 +187,7 @@ namespace EasyCLI
         /// <returns></returns>
         public static Command? Result(string data, List<object> classList)
         {
+
             var args = data.Arguments();
             if (args.Length <= 0)
             {

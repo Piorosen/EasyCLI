@@ -10,7 +10,10 @@ namespace EasyCLI
     public class EasyCLI
     {
         readonly List<object> classList = new List<object>();
-        
+
+        public Option Option { get; private set; } = Option.Instance;
+
+        #region Class 추가 및 삭제 기능
         public void AddClass(object item)
         {
             classList.Add(item);
@@ -44,6 +47,8 @@ namespace EasyCLI
                 classList.Remove(o);
             }
         }
+        #endregion
+
 
         public object Call(string command)
         {
