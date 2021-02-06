@@ -16,6 +16,21 @@ namespace EasyCLI
             classList.Add(item);
         }
 
+        public bool AddClass(Type type)
+        {
+            try
+            {
+                var r = Activator.CreateInstance(type);
+                if (r != null)
+                {
+                    classList.Add(r);
+                    return true;
+                }
+            }
+            catch { }
+            return false;
+        }
+
         public void RemoveClass(object item)
         {
             classList.Remove(item);
