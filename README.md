@@ -7,7 +7,7 @@
 ### Installation
 ```bash
 $> git clone https://github.com/Piorosen/EasyCLI.git
-$> dotnet add $(target project) reference $(aniplus-api) # [More Detail](https://docs.microsoft.com/ko-kr/dotnet/core/tools/dotnet-add-reference)
+$> dotnet add $(target project) reference $(EasyCLI) # [More Detail](https://docs.microsoft.com/ko-kr/dotnet/core/tools/dotnet-add-reference)
 ```
 
 ### Usage Example
