@@ -33,7 +33,7 @@ namespace EasyCLI
         /// 클래스 명, 함수 목록을 가져 올 때, 어떤 조건으로 가져 올지 설정합니다. <br />
         /// 기본값 : Public | NonPublic | Instance
         /// </summary>
-        public BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        public BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
 
         /// <summary>
         /// 클래스, 함수, 파라미터 이름을 사용자 입력을 비교 할 때 대 소문자 구별을 정확하게 할 것인지, <br />

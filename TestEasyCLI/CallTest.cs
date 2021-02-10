@@ -12,6 +12,17 @@ namespace TestEasyCLI
     [TestClass]
     public class CallTest
     {
+        [TestMethod]
+        public void StaticMethodTest()
+        {
+            var c = new EasyCLI.EasyCLI();
+            c.AddClass(new Foo());
+            c.AddClass(new StaticFoo());
+
+            var e = c.Call<string>("staticfoo bar --id 20 --name ha");
+
+        }
+
         protected void ExceptionMessage(Action action, string message)
         {
             try
